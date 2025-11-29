@@ -39,20 +39,29 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ data, isVisible }) => {
       {data.length === 0 ? (
         <p className="no-scores">No scores submitted yet.</p>
       ) : (
-        <ol className="score-list">
-          {data.map((entry, index) => (
-            <li key={index} className="list-item">
-              <span className="item-rank">#{index + 1}</span>
-              <span className="item-name">{entry.name}</span>
-              <span className="item-score">
-                <strong>{entry.score}</strong>
-              </span>
-              <span className="item-date">
-                ({new Date(entry.date).toLocaleDateString()})
-              </span>
-            </li>
-          ))}
-        </ol>
+        <>
+          <div className="list-header">
+            <span className="item-rank">No</span>
+            <span className="item-name">Name</span>
+            <span className="item-score">Score</span>
+            <span className="item-date">Date</span>
+          </div>
+
+          <ol className="score-list">
+            {data.map((entry, index) => (
+              <li key={index} className="list-item">
+                <span className="item-rank">#{index + 1}</span>
+                <span className="item-name">{entry.name}</span>
+                <span className="item-score">
+                  <strong>{entry.score}</strong>
+                </span>
+                <span className="item-date">
+                  ({new Date(entry.date).toLocaleDateString()})
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </div>
   );
