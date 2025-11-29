@@ -6,10 +6,27 @@ import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import * as fs from "fs";
 import * as path from "path";
+// ----------------------------------------------
+// --- ייבוא מהמודול החדש! ---
+import {
+  ROWS,
+  COLS,
+  COOLDOWN_TURNS,
+  SHAPES,
+  COLORS,
+  Shape,
+  Color,
+  Cell,
+  GameState,
+  HighScore,
+} from "./types";
+// ----------------------------------------------
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = 3001;
+
+// ... (שאר הגדרות השרת וה-Socket.IO)
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
@@ -22,42 +39,6 @@ const io = new Server(httpServer, {
   },
 });
 
-// ----------------------------------------------------
-// --- קבועים וטיפוסים (Constants and Types) ---
-// ----------------------------------------------------
-const ROWS = 3;
-const COLS = 6;
-const COOLDOWN_TURNS = 3;
-
-const SHAPES = ["Triangle", "Square", "Diamond", "Circle"]; // 4 סוגים
-const COLORS = ["Red", "Green", "Blue", "Yellow"]; // 4 סוגים
-
-// הגדרת Literal Types לביטחון טיפוסים משופר
-type Shape = "Triangle" | "Square" | "Diamond" | "Circle";
-type Color = "Red" | "Green" | "Blue" | "Yellow";
-
-// ----------------------------------------------------
-// --- 1. הגדרת מצב משחק יחיד (Single Source of Truth) ---
-// ----------------------------------------------------
-interface GameState {
-  score: number;
-  grid: Cell[][];
-  isActive: boolean;
-}
-
-// עדכון ה-interface Cell לשימוש ב-Literal Types
-interface Cell {
-  shape: Shape; // משתמש ב-Literal Type
-  color: Color; // משתמש ב-Literal Type
-  cooldown: number;
-}
-
-interface HighScore {
-  name: string;
-  score: number;
-  date: string;
-}
-
 // מצב המשחק הגלובלי (מאותחל מאוחר יותר)
 let gameState: GameState = {
   score: 0,
@@ -67,7 +48,8 @@ let gameState: GameState = {
 
 // --- פונקציות עזר יתווספו כאן (בשלב 2.2) ---
 // פונקציית עזר: קבלת ערך אקראי מתוך מערך
-const getRandomValue = <T>(array: T[]): T => {
+const getRandomValue = <T>(array: readonly T[]): T => {
+  // שינוי ל-readonly T[] כדי להתאים ל-as const
   const index = Math.floor(Math.random() * array.length);
   return array[index];
 };
@@ -80,6 +62,8 @@ const isValidCell = (
   shape: Shape,
   color: Color
 ): boolean => {
+  // ... (הפונקציה נשארת כפי שהיא, הטיפוסים כבר מיובאים)
+  // ...
   // 1. בדיקת תא למעלה (row - 1)
   if (row > 0) {
     const top = grid[row - 1][col];
@@ -114,8 +98,9 @@ const generateInitialGrid = (): Cell[][] => {
       // ניסיון למצוא צירוף חוקי
       do {
         // בחירה אקראית מתוך רשימת הקבועים
-        shape = getRandomValue(SHAPES) as Shape;
-        color = getRandomValue(COLORS) as Color;
+        // שימו לב: אין צורך ב-as Shape/Color כי getRandomValue עובדת עם המערכים
+        shape = getRandomValue(SHAPES);
+        color = getRandomValue(COLORS);
         attempts++;
 
         // מנגנון הגנה נגד לולאה אינסופית
@@ -134,7 +119,9 @@ const generateInitialGrid = (): Cell[][] => {
   return grid;
 };
 
+// ... (שאר פונקציות העזר נשארות כפי שהן)
 const getNeighbors = (grid: Cell[][], row: number, col: number): Cell[] => {
+  // ... (הפונקציה נשארת כפי שהיא)
   const neighbors: Cell[] = [];
 
   // רשימת שינויים בקואורדינטות (dx, dy) עבור למעלה, למטה, שמאל, ימין
@@ -166,7 +153,7 @@ const isMoveValid = (
   newColor: Color
 ): boolean => {
   const neighbors = getNeighbors(grid, row, col);
-
+  // ... (הפונקציה נשארת כפי שהיא)
   for (const neighbor of neighbors) {
     // בדיקת חוקיות צורה
     if (neighbor.shape === newShape) {
@@ -187,7 +174,7 @@ const isMoveValid = (
 
   return true;
 };
-
+// ... (שאר פונקציות העזר נשארות כפי שהן)
 const resetGame = () => {
   gameState = {
     score: 0,
@@ -201,6 +188,7 @@ const resetGame = () => {
 const LEADERBOARD_FILE = path.join(__dirname, "leaderboard.json");
 let leaderboard: HighScore[] = [];
 
+// ... (פונקציות Leaderboard)
 const loadLeaderboard = () => {
   try {
     if (fs.existsSync(LEADERBOARD_FILE)) {
@@ -242,9 +230,9 @@ app.get("/api/leaderboard", (req, res) => {
   const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
   res.json(top10);
 });
-
 // --- 2. לוגיקת חיבור לקוח ---
 io.on("connection", (socket: Socket) => {
+  // ... (טיפול בחיבור לקוח)
   console.log(`Client connected: ${socket.id}`); // כאשר לקוח חדש מתחבר, שלח לו את מצב המשחק הנוכחי
 
   socket.emit("gameStateUpdate", gameState); // לוגיקה לטיפול ב-Game Logic (תתווסף בהמשך)
@@ -289,9 +277,10 @@ io.on("connection", (socket: Socket) => {
 
         // בדיקת חוקיות מול השכנים
         if (
-          isMoveValid(gameState.grid, row, col, shape as Shape, color as Color)
+          // שימו לב: אין צורך ב-as Shape/Color כי השתמשנו ב-as const ב-types.ts וה-for-of עובד נכון עם הטיפוסים
+          isMoveValid(gameState.grid, row, col, shape, color)
         ) {
-          validMoves.push({ shape: shape as Shape, color: color as Color });
+          validMoves.push({ shape, color });
         }
       }
     }
@@ -309,10 +298,10 @@ io.on("connection", (socket: Socket) => {
       gameState.grid[row][col].color = selectedMove.color;
 
       // הפעלת צינון (Cooldown)
-      gameState.grid[row][col].cooldown = COOLDOWN_TURNS; // 3 תורות [cite: 42]
+      gameState.grid[row][col].cooldown = COOLDOWN_TURNS; // 3 תורות
 
       // עדכון ה-Score
-      gameState.score += 1; // +1 score for every valid change [cite: 48, 41]
+      gameState.score += 1; // +1 score for every valid change
 
       // 5. עדכון הצינון של שאר התאים (הורדת 1 מה-cooldown)
       for (let r = 0; r < ROWS; r++) {
@@ -357,6 +346,7 @@ io.on("connection", (socket: Socket) => {
 
 // --- 3. הפעלת השרת ---
 httpServer.listen(PORT, () => {
+  // ... (אתחול שרת)
   console.log(`Server listening on port ${PORT}`);
 
   // טען את ה-Leaderboard הקיים
