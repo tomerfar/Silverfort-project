@@ -1,82 +1,71 @@
-Silverfors the required Multi-Session, Real-Time Web Game challenge using a Full Stack TypeScript architecture.
+Silverfort – Multi-Session Real-Time Web Game
+
+A full-stack TypeScript solution for the Silverfort challenge.
+
+This project implements a multi-session, real-time, interactive web game using Node.js, React, TypeScript, and Socket.IO.
+The architecture ensures all players share a synchronized game state and interact in real time across multiple sessions.
 
 Implemented Requirements
+Multi-Session Support
 
-Requirement
+Full real-time synchronization across all connected clients using Socket.IO.
 
-Implementation Details
+All players see the exact same game state (grid, score, cooldown, etc.) at every moment.
 
-Technology Stack
+Core Game Logic
 
-Node.js (Express), TypeScript, React, Socket.IO. # t Tech Exam - Junior Full Stack Engineer (Multi-Session Game) This project implement
+Valid move checking and full rule validation.
 
-Multi-Session
+Generation of an initial valid board.
 
-Full synchronization using Socket.IO ensures all connected clients see the exact same game state (Grid, Score, Cooldown) in real-time.
+Mandatory shape/color change on every click.
 
-Core Logic
+Cooldown Mechanic
 
-Implemented game validation rules, initial valid board generation, and mandatory shape/color change on click.
+A 3-turn cooldown implemented server-side (Single Source of Truth).
 
-Cooldown
+Updated instantly on the client through socket events.
 
-Cooldown of 3 turns is handled on the server (Single Source of Truth) and reflected in the UI.
+Game Over Condition
 
-Game Over
+Game ends when a player attempts a move and no valid new shape/color combination exists.
 
-Game ends when a player attempts a click but no valid new shape/color combination exists.
+How to Run the Project
+Follow these steps to run both the server and the client.
 
-Bonus 1 (Leaderboard)
+1. Install Dependencies
 
-Implemented. High scores are saved to a leaderboard.json file on the server (Persistence) and fetched via a separate REST API call.
+Run these commands from the project root:
 
-Best Practices
-
-Clear separation of concerns (Client/Server), use of TypeScript Interfaces, and clean Git history (when submitting).
-
-🚀 Getting Started
-
-Prerequisites: Node.js (v18+), npm/yarn.
-
-1. Installation
-
-Install dependencies separately for the Server and Client:
-
-# In the root directory (silverfort-project):
+# Install server dependencies
 
 cd server
 npm install
+
+# Install client dependencies
+
 cd ../client
 npm install
 
-2. Running the Application
+2. Start the Server
 
-You must run the Server and Client in separate terminal windows.
-
-Component
-
-Directory
-
-Command
-
-URL
-
-Backend (Server)
-
-server/
-
+In a first terminal window:
+cd server
 npm start
 
-Runs on http://localhost:3001
+The backend will run at:
+http://localhost:3001
 
-Frontend (Client)
+3. Start the Client
 
-client/
-
+In a second terminal window:
+cd client
 npm start
 
-Opens http://localhost:3000
+The frontend will open at:
+http://localhost:3000
 
-3. Verification
+4. Test Multi-Session Behavior
 
-To verify multi-session synchronization, open http://localhost:3000 in multiple browser tabs or devices. All actions will be reflected instantly across all sessions.
+Open multiple tabs or devices at:
+http://localhost:3000
