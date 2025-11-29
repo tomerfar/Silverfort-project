@@ -16,7 +16,7 @@ const getRandomValue = <T>(array: readonly T[]): T => {
   return array[index];
 };
 
-// Checks validity against top and left neighbors (used for initial grid generation).
+// Checks validity against top and left neighbors.
 const isValidCell = (
   grid: Cell[][],
   row: number,
@@ -185,7 +185,7 @@ export const processPlayerClick = (
     // No Valid Move: Game Over
     newState.isActive = false;
     console.log(`Game Over! No valid move found for cell (${row}, ${col}).`);
-    return null; // Signal Game Over
+    return null; // Game Over
   }
 };
 

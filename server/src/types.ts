@@ -6,12 +6,12 @@ export const SHAPES = ["Triangle", "Square", "Diamond", "Circle"] as const;
 export const COLORS = ["Red", "Green", "Blue", "Yellow"] as const;
 
 /**
- * Shape Literal Type: "Triangle" | "Square" | "Diamond" | "Circle"
+ * Shape Type: "Triangle" | "Square" | "Diamond" | "Circle"
  */
 export type Shape = (typeof SHAPES)[number];
 
 /**
- * Color Literal Type: "Red" | "Green" | "Blue" | "Yellow"
+ * Color Type: "Red" | "Green" | "Blue" | "Yellow"
  */
 export type Color = (typeof COLORS)[number];
 

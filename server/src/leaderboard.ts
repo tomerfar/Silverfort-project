@@ -12,8 +12,6 @@ let leaderboard: HighScore[] = [];
 const saveLeaderboard = (): void => {
   try {
     // Sort the entire array and keep only the top 10 scores.
-    // This step ensures that the leaderboard array remains optimized in memory
-    // and ready for quick retrieval via getTopScores.
     const topScores = leaderboard
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
@@ -27,9 +25,6 @@ const saveLeaderboard = (): void => {
   }
 };
 
-/**
- * Loads the leaderboard data from the JSON file into memory.
- */
 export const loadLeaderboard = (): void => {
   try {
     if (fs.existsSync(LEADERBOARD_FILE)) {
@@ -70,8 +65,6 @@ export const addScoreToLeaderboard = (name: string, score: number): void => {
 
 /**
  * Returns the top 10 scores, sorted high to low.
- * Since saveLeaderboard keeps the global 'leaderboard' array sorted and sliced to 10,
- * we only need to return a copy.
  */
 export const getTopScores = (): HighScore[] => {
   return leaderboard.slice();

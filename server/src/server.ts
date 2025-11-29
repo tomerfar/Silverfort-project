@@ -1,13 +1,7 @@
-// server/src/server.ts
-
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-
-// ----------------------------------------------
-// --- Module Imports ---
-// ----------------------------------------------
 import { GameState } from "./types";
 import { createNewGame, processPlayerClick } from "./gameLogic";
 import {
@@ -25,7 +19,7 @@ app.use(express.json());
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // React client port
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -41,9 +35,6 @@ app.get("/api/leaderboard", (req, res) => {
   res.json(top10);
 });
 
-// ----------------------------------------------------
-// --- 2. Socket.IO Handlers (Game Events) ---
-// ----------------------------------------------------
 io.on("connection", (socket: Socket) => {
   // Send the current state to the newly connected client
   socket.emit("gameStateUpdate", gameState);
@@ -51,17 +42,16 @@ io.on("connection", (socket: Socket) => {
   socket.on("playerClick", (data: { row: number; col: number }) => {
     const { row, col } = data;
 
-    // Use the game logic module to process the click
     const updatedState = processPlayerClick(gameState, row, col);
 
     if (updatedState === null) {
       // Game Over: The move was invalid
       const finalScore = gameState.score;
-      gameState.isActive = false; // Ensure global state is set to inactive
+      gameState.isActive = false;
 
       // Send Game Over event to all clients
       io.emit("gameOver", { finalScore });
-      console.log(`Game Over. Final Score: ${finalScore}`); // Log critical event
+      console.log(`Game Over. Final Score: ${finalScore}`);
     } else {
       // Valid Move or Cooldown
       gameState = updatedState;
