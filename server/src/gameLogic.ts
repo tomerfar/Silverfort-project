@@ -1,5 +1,3 @@
-// server/src/gameLogic.ts
-
 import {
   ROWS,
   COLS,
@@ -12,14 +10,13 @@ import {
   GameState,
 } from "./types";
 
-// פונקציית עזר: קבלת ערך אקראי מתוך מערך
+// Returns a random element from an array.
 const getRandomValue = <T>(array: readonly T[]): T => {
   const index = Math.floor(Math.random() * array.length);
   return array[index];
 };
 
-// פונקציית עזר: בדיקה האם תא (row, col) חוקי ביחס לשכנים שכבר קיימים
-// משמשת רק ליצירת לוח התחלתי!
+// Checks validity against top and left neighbors (used for initial grid generation).
 const isValidCell = (
   grid: Cell[][],
   row: number,
@@ -27,47 +24,41 @@ const isValidCell = (
   shape: Shape,
   color: Color
 ): boolean => {
-  // 1. בדיקת תא למעלה (row - 1)
+  // 1. Check top neighbor
   if (row > 0) {
     const top = grid[row - 1][col];
-    // בדיקה: האם זהה לצורה או לצבע של התא שמעליו
     if (top.shape === shape || top.color === color) return false;
   }
 
-  // 2. בדיקת תא משמאל (col - 1)
+  // 2. Check left neighbor
   if (col > 0) {
     const left = grid[row][col - 1];
-    // בדיקה: האם זהה לצורה או לצבע של התא משמאלו
     if (left.shape === shape || left.color === color) return false;
   }
 
   return true;
 };
 
-// הפונקציה הראשית: יצירת לוח התחלתי תקין (Initial Valid Grid)
+// Generates a starting grid that is guaranteed to be valid.
 export const generateInitialGrid = (): Cell[][] => {
-  // יצירת מערך דו-ממדי בגודל ROWS x COLS
   const grid: Cell[][] = Array.from({ length: ROWS }, () => []);
 
   for (let r = 0; r < ROWS; r++) {
-    grid[r] = []; // אתחול השורה כמערך ריק
+    grid[r] = [];
     for (let c = 0; c < COLS; c++) {
       let attempts = 0;
       let shape: Shape;
       let color: Color;
 
-      // ניסיון למצוא צירוף חוקי
       do {
-        // בחירה אקראית מתוך רשימת הקבועים
         shape = getRandomValue(SHAPES);
         color = getRandomValue(COLORS);
         attempts++;
 
-        // מנגנון הגנה נגד לולאה אינסופית
+        // Failsafe for infinite loop
         if (attempts > 50) {
-          // אם נתקענו, הלוח כנראה צפוף מדי. מתחילים את כל הלוח מחדש.
           console.error(
-            "Restarting grid generation due to failure to find a valid combination."
+            "Game Logic Error: Restarting grid generation due to failure to find a valid combination."
           );
           return generateInitialGrid();
         }
@@ -79,23 +70,23 @@ export const generateInitialGrid = (): Cell[][] => {
   return grid;
 };
 
-// פונקציית עזר: קבלת שכנים (לשימוש ב-isMoveValid)
+// Gets the valid neighbors (Up, Down, Left, Right) of a cell.
 const getNeighbors = (grid: Cell[][], row: number, col: number): Cell[] => {
   const neighbors: Cell[] = [];
 
-  // רשימת שינויים בקואורדינטות (dx, dy) עבור למעלה, למטה, שמאל, ימין
+  // Directions: Up, Down, Left, Right
   const directions = [
-    { dr: -1, dc: 0 }, // למעלה
-    { dr: 1, dc: 0 }, // למטה
-    { dr: 0, dc: -1 }, // שמאל
-    { dr: 0, dc: 1 }, // ימין
+    { dr: -1, dc: 0 },
+    { dr: 1, dc: 0 },
+    { dr: 0, dc: -1 },
+    { dr: 0, dc: 1 },
   ];
 
   for (const { dr, dc } of directions) {
     const newRow = row + dr;
     const newCol = col + dc;
 
-    // בדיקה: האם הקואורדינטות החדשות בתוך גבולות הלוח?
+    // Check bounds
     if (newRow >= 0 && newRow < ROWS && newCol >= 0 && newCol < COLS) {
       neighbors.push(grid[newRow][newCol]);
     }
@@ -104,7 +95,7 @@ const getNeighbors = (grid: Cell[][], row: number, col: number): Cell[] => {
   return neighbors;
 };
 
-// פונקציית לוגיקה: בדיקת חוקיות מהלך מול שכנים
+// Checks if a potential move is valid against all 4 neighbors.
 export const isMoveValid = (
   grid: Cell[][],
   row: number,
@@ -115,19 +106,13 @@ export const isMoveValid = (
   const neighbors = getNeighbors(grid, row, col);
 
   for (const neighbor of neighbors) {
-    // בדיקת חוקיות צורה
+    // Check: Shape must be different
     if (neighbor.shape === newShape) {
-      console.log(
-        `Validation Failed: Shape ${newShape} matches neighbor at (${neighbor.shape})`
-      );
       return false;
     }
 
-    // בדיקת חוקיות צבע
+    // Check: Color must be different
     if (neighbor.color === newColor) {
-      console.log(
-        `Validation Failed: Color ${newColor} matches neighbor at (${neighbor.color})`
-      );
       return false;
     }
   }
@@ -136,8 +121,8 @@ export const isMoveValid = (
 };
 
 /**
- * פונקציה ראשית לעיבוד לחיצת שחקן.
- * מחזירה את מצב המשחק המעודכן או null אם המשחק נגמר.
+ * Processes a player's click.
+ * Returns the updated GameState, or null if Game Over.
  */
 export const processPlayerClick = (
   currentState: GameState,
@@ -150,76 +135,67 @@ export const processPlayerClick = (
   const newState = JSON.parse(JSON.stringify(currentState)) as GameState;
   const currentCell = newState.grid[row][col];
 
-  // 1. בדיקת צינון (Cooldown)
+  // 1. Check Cooldown
   if (currentCell.cooldown > 0) {
-    console.log(`Click ignored: Cell (${row}, ${col}) is on cooldown.`);
     return newState;
   }
 
   const oldShape = currentCell.shape;
   const oldColor = currentCell.color;
 
-  // 2. חיפוש כל המהלכים החוקיים (ששונים מהמצב הנוכחי)
+  // 2. Find all valid moves (must be different shape AND different color)
   let validMoves: { shape: Shape; color: Color }[] = [];
 
   for (const shape of SHAPES) {
     for (const color of COLORS) {
-      // חובה: הצורה שונה וגם הצבע שונה מהתא הנוכחי
+      // Must be a different shape and color from current cell
       if (shape === oldShape || color === oldColor) {
         continue;
       }
 
-      // בדיקת חוקיות מול השכנים
       if (isMoveValid(newState.grid, row, col, shape, color)) {
         validMoves.push({ shape, color });
       }
     }
   }
 
-  // --- טיפול בתוצאה ---
-
   if (validMoves.length > 0) {
-    // מהלך חוקי: עדכון מצב המשחק
+    // Valid Move: Update State
     const selectedMove = getRandomValue(validMoves);
 
-    // עדכון ה-Cell שנלחץ
+    // Update cell, apply cooldown, increment score
     newState.grid[row][col].shape = selectedMove.shape;
     newState.grid[row][col].color = selectedMove.color;
-
-    // הפעלת צינון (Cooldown)
     newState.grid[row][col].cooldown = COOLDOWN_TURNS;
-
-    // עדכון ה-Score
     newState.score += 1;
 
-    // 3. עדכון הצינון של שאר התאים (הורדת 1 מה-cooldown)
+    // 3. Update Cooldowns for other cells
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = newState.grid[r][c];
-        // אם התא בצינון וזה לא התא שנלחץ עכשיו, הורד את הצינון
+        // Reduce cooldown if active and not the clicked cell
         if (cell.cooldown > 0 && (r !== row || c !== col)) {
           cell.cooldown -= 1;
         }
       }
     }
 
-    console.log(`Valid Move: (${row}, ${col}). New Score: ${newState.score}`);
     return newState;
   } else {
-    // אין מהלך חוקי: Game Over
+    // No Valid Move: Game Over
     newState.isActive = false;
     console.log(`Game Over! No valid move found for cell (${row}, ${col}).`);
-    return null; // נחזיר null כדי לסמן שהמשחק נגמר
+    return null; // Signal Game Over
   }
 };
 
 /**
- * פונקציה המאפסת ומאתחלת משחק חדש.
+ * Creates and initializes a new game state.
  */
 export const createNewGame = (): GameState => {
   return {
     score: 0,
-    grid: generateInitialGrid(), // יצירת לוח חדש
-    isActive: true, // הפעלת המשחק
+    grid: generateInitialGrid(),
+    isActive: true,
   };
 };

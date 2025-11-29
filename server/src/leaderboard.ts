@@ -1,15 +1,34 @@
-// server/src/leaderboard.ts
-
 import * as fs from "fs";
 import * as path from "path";
-import { HighScore } from "./types"; // ייבוא ה-Interface מהמודול types
+import { HighScore } from "./types";
 
-// הגדרת נתיב הקובץ
 const LEADERBOARD_FILE = path.join(__dirname, "..", "leaderboard.json");
 let leaderboard: HighScore[] = [];
 
 /**
- * טוען את נתוני ה-Leaderboard מקובץ JSON.
+ * Saves the current leaderboard data (top 10 scores) to the JSON file.
+ * This function also sorts and slices the global array before writing.
+ */
+const saveLeaderboard = (): void => {
+  try {
+    // Sort the entire array and keep only the top 10 scores.
+    // This step ensures that the leaderboard array remains optimized in memory
+    // and ready for quick retrieval via getTopScores.
+    const topScores = leaderboard
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+
+    // Update the global array with the top 10 sorted scores
+    leaderboard = topScores;
+
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
+  } catch (e) {
+    console.error("Error saving leaderboard:", e);
+  }
+};
+
+/**
+ * Loads the leaderboard data from the JSON file into memory.
  */
 export const loadLeaderboard = (): void => {
   try {
@@ -24,24 +43,10 @@ export const loadLeaderboard = (): void => {
 };
 
 /**
- * שומר את נתוני ה-Leaderboard (10 השיאים הטובים ביותר) לקובץ JSON.
- */
-export const saveLeaderboard = (): void => {
-  try {
-    // שמור רק את 10 התוצאות הטובות ביותר
-    const topScores = leaderboard
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(topScores, null, 2));
-  } catch (e) {
-    console.error("Error saving leaderboard:", e);
-  }
-};
-
-/**
- * מוסיף תוצאה חדשה ל-Leaderboard ושומר את הרשימה המעודכנת.
- * @param name שם השחקן
- * @param score הציון שהושג
+ * Adds a new score to the leaderboard array and saves the updated list.
+ * Only scores greater than 0 are added.
+ * @param name Player's name.
+ * @param score The score achieved.
  */
 export const addScoreToLeaderboard = (name: string, score: number): void => {
   if (score > 0) {
@@ -50,15 +55,24 @@ export const addScoreToLeaderboard = (name: string, score: number): void => {
       score,
       date: new Date().toISOString(),
     };
-    leaderboard.push(newScore);
-    saveLeaderboard();
-    console.log(`Score submitted: ${name} with ${score}`);
+
+    // Check if the new score is high enough to be in the current top 10
+    // If the list is already 10 elements long and the new score is lower than the lowest score, we skip saving.
+    if (
+      leaderboard.length < 10 ||
+      score > leaderboard[leaderboard.length - 1].score
+    ) {
+      leaderboard.push(newScore);
+      saveLeaderboard();
+    }
   }
 };
 
 /**
- * מחזיר את 10 השיאים הטובים ביותר, ממוינים מהגבוה לנמוך.
+ * Returns the top 10 scores, sorted high to low.
+ * Since saveLeaderboard keeps the global 'leaderboard' array sorted and sliced to 10,
+ * we only need to return a copy.
  */
 export const getTopScores = (): HighScore[] => {
-  return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+  return leaderboard.slice();
 };

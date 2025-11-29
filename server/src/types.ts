@@ -1,52 +1,40 @@
-// server/src/types.ts
-
-// ----------------------------------------------------
-// --- קבועים לטובת Game Logic ---
-// ----------------------------------------------------
 export const ROWS = 3;
 export const COLS = 6;
 export const COOLDOWN_TURNS = 3;
 
-// קבועים המשמשים גם כ-Literal Types
-export const SHAPES = ["Triangle", "Square", "Diamond", "Circle"] as const; // as const: מבטיח שהמערך הוא קבוע ולא ישתנה, ומאפשר שימוש נכון בטיפוסים
+export const SHAPES = ["Triangle", "Square", "Diamond", "Circle"] as const;
 export const COLORS = ["Red", "Green", "Blue", "Yellow"] as const;
 
-// ----------------------------------------------------
-// --- הגדרת Literal Types (לשיפור Type Safety) ---
-// ----------------------------------------------------
-
-// יצירת Literal Type מתוך המערך הקבוע (SHAPES)
-// דוגמה: "Triangle" | "Square" | "Diamond" | "Circle"
+/**
+ * Shape Literal Type: "Triangle" | "Square" | "Diamond" | "Circle"
+ */
 export type Shape = (typeof SHAPES)[number];
 
-// יצירת Literal Type מתוך המערך הקבוע (COLORS)
-// דוגמה: "Red" | "Green" | "Blue" | "Yellow"
+/**
+ * Color Literal Type: "Red" | "Green" | "Blue" | "Yellow"
+ */
 export type Color = (typeof COLORS)[number];
 
-// ----------------------------------------------------
-// --- Interfaces למצב המשחק ---
-// ----------------------------------------------------
-
 /**
- * Interface המייצג תא בלוח המשחק.
+ * Defines a single cell on the game grid.
  */
 export interface Cell {
   shape: Shape;
   color: Color;
-  cooldown: number; // מספר תורות עד שניתן ללחוץ על התא שוב
+  cooldown: number; // The number of turns remaining before the cell can be clicked again.
 }
 
 /**
- * Interface המייצג את המצב הגלובלי של המשחק.
+ * Defines the entire global state of the game.
  */
 export interface GameState {
   score: number;
   grid: Cell[][];
-  isActive: boolean;
+  isActive: boolean; // True if the game is in progress.
 }
 
 /**
- * Interface המייצג שיא בטבלת ה-Leaderboard.
+ * Defines a single entry in the High Score Leaderboard.
  */
 export interface HighScore {
   name: string;
