@@ -25,7 +25,7 @@ app.use(express.json());
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000", // React client port
+    origin: "*", // React client port
     methods: ["GET", "POST"],
   },
 });
