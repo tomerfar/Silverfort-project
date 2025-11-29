@@ -4,12 +4,19 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import * as fs from "fs";
-import * as path from "path";
+// ייבוא מובנה נשאר
+// import * as fs from "fs";
+// import * as path from "path";
+
 // ----------------------------------------------
 // --- ייבוא מהמודולים השונים ---
-import { ROWS, COLS, GameState, HighScore } from "./types";
-import { createNewGame, processPlayerClick } from "./gameLogic"; // ייבוא לוגיקת המשחק
+import { GameState } from "./types";
+import { createNewGame, processPlayerClick } from "./gameLogic";
+import {
+  loadLeaderboard,
+  addScoreToLeaderboard,
+  getTopScores,
+} from "./leaderboard"; // ייבוא לוגיקת ה-Leaderboard
 // ----------------------------------------------
 
 const app = express();
@@ -34,53 +41,12 @@ let gameState: GameState = {
   isActive: false,
 };
 
-// **פונקציות לוגיקת משחק נמחקו מכאן (כגון getRandomValue, generateInitialGrid, isMoveValid, resetGame)**
-// **והועברו ל-gameLogic.ts**
+// **לוגיקת Leaderboard נמחקה מכאן (כולל המערך leaderboard) והועברה ל-leaderboard.ts**
 
-// --- לוגיקת Leaderboard (Persistence) ---
-const LEADERBOARD_FILE = path.join(__dirname, "leaderboard.json");
-let leaderboard: HighScore[] = [];
-
-// ... (שאר פונקציות Leaderboard)
-const loadLeaderboard = () => {
-  try {
-    if (fs.existsSync(LEADERBOARD_FILE)) {
-      const data = fs.readFileSync(LEADERBOARD_FILE, "utf-8");
-      leaderboard = JSON.parse(data);
-      console.log(`Leaderboard loaded with ${leaderboard.length} entries.`);
-    }
-  } catch (e) {
-    console.error("Error loading leaderboard:", e);
-  }
-};
-
-const saveLeaderboard = () => {
-  try {
-    // שמור רק את 10 התוצאות הטובות ביותר (בונוס)
-    const topScores = leaderboard
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(topScores, null, 2));
-  } catch (e) {
-    console.error("Error saving leaderboard:", e);
-  }
-};
-
-const addScoreToLeaderboard = (name: string, score: number) => {
-  if (score > 0) {
-    const newScore: HighScore = {
-      name,
-      score,
-      date: new Date().toISOString(),
-    };
-    leaderboard.push(newScore);
-    saveLeaderboard();
-  }
-};
-
+// --- הגדרת נתיב (Endpoint) ל-Leaderboard ---
 app.get("/api/leaderboard", (req, res) => {
-  // שלח את ה-10 התוצאות הטובות ביותר, ממוינות
-  const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+  // קורא לפונקציה המייצאת את הנתונים הממוינים
+  const top10 = getTopScores();
   res.json(top10);
 });
 
@@ -93,22 +59,20 @@ io.on("connection", (socket: Socket) => {
   socket.on("playerClick", (data: { row: number; col: number }) => {
     const { row, col } = data;
 
-    // --- שימוש ב-processPlayerClick המודולרית ---
     const updatedState = processPlayerClick(gameState, row, col);
 
     if (updatedState === null) {
-      // המשחק נגמר (processPlayerClick החזירה null)
-      // נשמור את התוצאה הסופית לשליחה ללקוח לפני איפוס
+      // המשחק נגמר
       const finalScore = gameState.score;
+      gameState.isActive = false;
 
-      // עדכון ה-gameState הגלובלי למצב Game Over
-      gameState.isActive = false; // למקרה שזה לא עודכן בפונקציה
+      // שליחת אירוע Game Over
       io.emit("gameOver", { finalScore });
     } else {
       // עדכון מצב המשחק הגלובלי
       gameState = updatedState;
 
-      // אם המשחק פעיל, נשלח עדכון מצב
+      // שליחת עדכון מצב
       if (gameState.isActive) {
         io.emit("gameStateUpdate", gameState);
       }
@@ -117,10 +81,11 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("submitScore", (data: { name: string; score: number }) => {
     const { name, score } = data;
-    addScoreToLeaderboard(name, score);
-    console.log(`Score submitted: ${name} with ${score}`);
 
-    // **החלפת resetGame ב-createNewGame**
+    // **שימוש בפונקציה המיובאת מהמודול החדש**
+    addScoreToLeaderboard(name, score);
+
+    // אתחול משחק חדש
     gameState = createNewGame();
     io.emit("gameStateUpdate", gameState);
   });
@@ -134,14 +99,12 @@ io.on("connection", (socket: Socket) => {
 httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 
-  // טען את ה-Leaderboard הקיים
+  // **טעינת ה-Leaderboard באמצעות הפונקציה המיובאת**
   loadLeaderboard();
 
   // *** אתחול מצב המשחק הראשי ***
-  // **החלפת האתחול הישיר ב-createNewGame**
   gameState = createNewGame();
 
-  // שלח עדכון מצב משחק לכל הלקוחות הקיימים
   io.emit("gameStateUpdate", gameState);
 
   console.log("Game State Initialized. Ready to play!");
