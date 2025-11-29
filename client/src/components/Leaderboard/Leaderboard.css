@@ -1,13 +1,49 @@
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 .leaderboard-container {
-  margin: 20px auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 900;
+
   padding: 15px;
   border: 1px solid #ffd700;
-  border-radius: 12px;
+  border-radius: 0 12px 12px 0;
   background-color: #333;
   max-width: 450px;
   width: 90%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.6);
   text-align: center;
+  overflow-y: auto;
+
+  transition: transform 0.4s ease-in-out;
+  transform: translateX(-100%);
+}
+
+.leaderboard-enter-active {
+  animation: slideInLeft 0.4s forwards;
+  transform: translateX(0);
+}
+
+.leaderboard-exit-active {
+  animation: slideOutLeft 0.4s forwards;
 }
 
 .leaderboard-title {

@@ -68,7 +68,6 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // 1. Connection Management
     socket.on("connect", () => {
       setConnectionStatus("Connected. Waiting for game state...");
     });
@@ -77,7 +76,6 @@ const App: React.FC = () => {
       setConnectionStatus("Disconnected. Server may be down.");
     });
 
-    // 2. Real-Time Game State Update
     socket.on("gameStateUpdate", (newGameState: GameState) => {
       setGameState(newGameState);
       setConnectionStatus("Connected: Real-time update received.");
@@ -87,14 +85,12 @@ const App: React.FC = () => {
       }
     });
 
-    // 3. Game Over Event
     socket.on("gameOver", (data: { finalScore: number }) => {
       if (data.finalScore > 0) {
         setShowScoreInput(true);
       }
     });
 
-    // Cleanup
     return () => {
       socket.off("connect");
       socket.off("disconnect");
@@ -120,13 +116,12 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1 className="App-title">Multi-Session Grid Game</h1>
+      <header className="App-header" style={{ position: "relative" }}>
+        <h1 className="App-title">Silverfort Grid Game 🛡️</h1>
         <p className="status-text">
           Connection Status: <strong>{connectionStatus}</strong>
         </p>
 
-        {/* Leaderboard Button */}
         <button
           onClick={handleLeaderboardToggle}
           className="leaderboard-toggle-btn"
@@ -134,7 +129,6 @@ const App: React.FC = () => {
           {showLeaderboard ? "🔼 Hide Leaderboard" : "🏆 Show Leaderboard"}
         </button>
 
-        {/* Score Input Modal */}
         {showScoreInput && (
           <ScoreInputModal
             score={gameState.score}
@@ -142,10 +136,8 @@ const App: React.FC = () => {
           />
         )}
 
-        {/* Leaderboard Display */}
-        {showLeaderboard && <Leaderboard data={leaderboardData} />}
+        <Leaderboard data={leaderboardData} isVisible={showLeaderboard} />
 
-        {/* Core Game UI */}
         <div className="game-container">
           <h2 className="current-score">Score: {gameState.score}</h2>
 
@@ -155,13 +147,11 @@ const App: React.FC = () => {
             </h2>
           )}
 
-          {/* Game Grid */}
           {gameState.grid.length > 0 && (
             <GameGrid gameState={gameState} onCellClick={handleCellClick} />
           )}
         </div>
 
-        {/* Toast */}
         {toastMessage && (
           <ToastNotification message={toastMessage} onClose={closeToast} />
         )}
