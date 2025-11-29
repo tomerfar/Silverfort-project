@@ -5,7 +5,7 @@ import * as path from "path";
 import { HighScore } from "./types"; // ייבוא ה-Interface מהמודול types
 
 // הגדרת נתיב הקובץ
-const LEADERBOARD_FILE = path.join(__dirname, "leaderboard.json");
+const LEADERBOARD_FILE = path.join(__dirname, "..", "leaderboard.json");
 let leaderboard: HighScore[] = [];
 
 /**
