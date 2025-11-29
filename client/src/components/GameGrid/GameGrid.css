@@ -1,0 +1,18 @@
+.game-grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+
+  border: 3px solid #61dafb;
+  padding: 10px;
+  margin: 20px auto;
+  border-radius: 12px;
+  background-color: #282c34;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+  max-width: 550px;
+  width: 95%;
+}
+
+.game-grid-container:hover {
+  box-shadow: 0 6px 20px rgba(97, 218, 251, 0.4);
+}

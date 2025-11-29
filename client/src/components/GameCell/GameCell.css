@@ -1,0 +1,51 @@
+.game-cell-base {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+.game-cell-clickable {
+  cursor: pointer;
+  opacity: 1;
+  border: 3px solid transparent;
+}
+
+.game-cell-cooldown {
+  cursor: not-allowed;
+  opacity: 0.6;
+  border: 3px dashed #333;
+  transform: scale(1);
+}
+
+.game-cell-gameover {
+  cursor: not-allowed;
+  opacity: 0.6;
+  border: 3px solid transparent;
+}
+
+.game-cell-clickable:hover {
+  transform: scale(1.08);
+}
+
+.svg-shape-container {
+  width: 60%;
+  height: 60%;
+}
+
+.cooldown-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}

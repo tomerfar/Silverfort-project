@@ -1,0 +1,77 @@
+/* client/src/components/ScoreInputModal/ScoreInputModal.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.form-container {
+  padding: 25px;
+  border: 3px solid #ff6b6b; /* Red border for game over */
+  border-radius: 12px;
+  background-color: #444;
+  max-width: 350px;
+  width: 90%; /* Added relative width for better responsiveness */
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.game-over-title {
+  color: #ff6b6b;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.score-text {
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.final-score {
+  color: #61dafb;
+  font-weight: bold;
+}
+
+.label-nickname {
+  color: #fff;
+  display: block;
+  margin-bottom: 15px;
+  font-size: 16px;
+  display: flex; /* Use flex for alignment */
+  justify-content: center;
+  align-items: center;
+}
+
+.input-field {
+  margin-left: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 150px;
+  box-sizing: border-box; /* Include padding/border in element's total width/height */
+}
+
+.submit-button {
+  padding: 10px 20px;
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-top: 10px; /* Added spacing */
+}
+
+.submit-button:hover {
+  background-color: #ff4747;
+  transform: translateY(-1px);
+}

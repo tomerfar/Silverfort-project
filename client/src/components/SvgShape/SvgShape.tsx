@@ -1,5 +1,5 @@
 import React from "react";
-import { Shape } from "./Types";
+import { Shape } from "../../Types";
 
 interface SvgShapeProps {
   shape: Shape | string;

@@ -1,9 +1,6 @@
-// client/src/App.tsx
-
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import axios from "axios";
-// ייבוא קובץ הטיפוסים (בהנחה ששם הקובץ הוא 'Types.ts')
 import {
   GameState,
   HighScore,
@@ -11,12 +8,10 @@ import {
   SOCKET_SERVER_URL,
   API_URL,
 } from "./Types";
-import GameGrid from "./GameGrid";
-import Leaderboard from "./Leaderboard";
-import ScoreInputModal from "./ScoreInputModal";
-import ToastNotification from "./ToastNotification";
-
-// ... (socket initialization, App component definition, state, API functions)
+import GameGrid from "./components/GameGrid/GameGrid";
+import Leaderboard from "./components/Leaderboard/Leaderboard";
+import ScoreInputModal from "./components/ScoreInputModal/ScoreInputModal";
+import ToastNotification from "./components/ToastNotification/ToastNotification";
 
 const socket = io(SOCKET_SERVER_URL);
 
@@ -24,25 +19,20 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
-  // Leaderboard and Game Over States
   const [showScoreInput, setShowScoreInput] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<HighScore[]>([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  // *** NEW STATE FOR TOAST ***
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Function to show the toast notification
   const showToast = (message: string) => {
     setToastMessage(message);
-    // The ToastNotification component will handle auto-closing via its onClose prop
   };
 
-  // Function to close the toast notification
   const closeToast = () => {
     setToastMessage(null);
   };
-  // --- API Functions (Omitted for brevity - same as before) ---
+
   const fetchLeaderboard = useCallback(async () => {
     try {
       const response = await axios.get<HighScore[]>(
@@ -76,7 +66,6 @@ const App: React.FC = () => {
     }
   };
 
-  // --- Socket.IO Handlers (Omitted for brevity - same as before) ---
   useEffect(() => {
     // 1. Connection Management
     socket.on("connect", () => {
@@ -113,10 +102,8 @@ const App: React.FC = () => {
     };
   }, [fetchLeaderboard]);
 
-  // --- 4. שליחת מהלך לשרת (Updated Logic) ---
   const handleCellClick = (row: number, col: number) => {
     if (!gameState.isActive) {
-      // Replaced alert() with showToast()
       showToast("Game is not active! Please refresh to start.");
       return;
     }
@@ -124,16 +111,12 @@ const App: React.FC = () => {
     const cell = gameState.grid[row][col];
 
     if (cell && cell.cooldown > 0) {
-      // *** Replaced alert() with showToast() for cooldown ***
       showToast(`Cell is cooling down. Ready in ${cell.cooldown} turns.`);
       return;
     }
-
-    // Sending interaction to the server
     socket.emit("playerClick", { row, col });
   };
 
-  // --- 5. הצגת ה-UI ---
   return (
     <div className="App" style={appStyles.container}>
       <header style={appStyles.header}>
@@ -177,7 +160,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* *** RENDER THE TOAST NOTIFICATION *** */}
+        {/* Toast */}
         {toastMessage && (
           <ToastNotification message={toastMessage} onClose={closeToast} />
         )}
