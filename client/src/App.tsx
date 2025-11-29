@@ -12,6 +12,7 @@ import GameGrid from "./components/GameGrid/GameGrid";
 import Leaderboard from "./components/Leaderboard/Leaderboard";
 import ScoreInputModal from "./components/ScoreInputModal/ScoreInputModal";
 import ToastNotification from "./components/ToastNotification/ToastNotification";
+import "./App.css";
 
 const socket = io(SOCKET_SERVER_URL);
 
@@ -118,17 +119,17 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="App" style={appStyles.container}>
-      <header style={appStyles.header}>
-        <h1 style={appStyles.h1}>Multi-Session Grid Game 🕹️</h1>
-        <p style={appStyles.statusText}>
+    <div className="App">
+      <header className="App-header">
+        <h1 className="App-title">Multi-Session Grid Game 🕹️</h1>
+        <p className="status-text">
           Connection Status: <strong>{connectionStatus}</strong>
         </p>
 
         {/* Leaderboard Button */}
         <button
           onClick={handleLeaderboardToggle}
-          style={appStyles.leaderboardButton}
+          className="leaderboard-toggle-btn"
         >
           {showLeaderboard ? "🔼 Hide Leaderboard" : "🏆 Show Leaderboard"}
         </button>
@@ -145,11 +146,11 @@ const App: React.FC = () => {
         {showLeaderboard && <Leaderboard data={leaderboardData} />}
 
         {/* Core Game UI */}
-        <div style={appStyles.gameContainer}>
-          <h2 style={appStyles.score}>Score: {gameState.score}</h2>
+        <div className="game-container">
+          <h2 className="current-score">Score: {gameState.score}</h2>
 
           {!gameState.isActive && gameState.score > 0 && !showScoreInput && (
-            <h2 style={appStyles.gameOverText}>
+            <h2 className="game-over-text">
               GAME OVER! Final Score: {gameState.score}
             </h2>
           )}
@@ -167,60 +168,6 @@ const App: React.FC = () => {
       </header>
     </div>
   );
-};
-
-// --- Inline Styles (Omitted for brevity - same as before) ---
-const appStyles: { [key: string]: React.CSSProperties } = {
-  // ... same as before
-  container: {
-    textAlign: "center",
-    backgroundColor: "#282c34",
-    minHeight: "100vh",
-    color: "white",
-    padding: "20px 0",
-    fontFamily: "Arial, sans-serif",
-  },
-  header: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "calc(10px + 2vmin)",
-  },
-  h1: {
-    color: "#61dafb",
-  },
-  statusText: {
-    fontSize: "14px",
-    color: "#ccc",
-  },
-  leaderboardButton: {
-    margin: "15px",
-    padding: "10px 20px",
-    backgroundColor: "#FFD700",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    transition: "background-color 0.2s",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
-  },
-  score: {
-    color: "#fff",
-    margin: "10px 0",
-  },
-  gameOverText: {
-    color: "#ff6b6b",
-    animation: "pulse 1s infinite",
-  },
-  gameContainer: {
-    marginTop: "20px",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
 };
 
 export default App;
