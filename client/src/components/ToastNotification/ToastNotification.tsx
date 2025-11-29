@@ -16,7 +16,6 @@ const ToastNotification: React.FC<ToastProps> = ({
     const exitDelay = duration - 500;
 
     const preExitTimer = setTimeout(() => {
-      // Start fade out animation by applying the slideOutDown class directly via style property
       const element = document.getElementById("toast-notification");
       if (element) {
         element.style.animation = "slideOutDown 0.5s ease-out forwards";

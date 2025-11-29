@@ -1,6 +1,3 @@
-/* client/src/components/ToastNotification/ToastNotification.css */
-
-/* Keyframes for smooth slide-in and slide-out */
 @keyframes slideInUp {
   from {
     transform: translate(-50%, 100px);
@@ -25,14 +22,12 @@
 
 .toast-container {
   position: fixed;
-  bottom: 60px; /* Elevated position */
+  bottom: 60px;
   left: 50%;
 
-  /* Apply slide-in animation on mount */
   animation: slideInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 
-  /* General Styling */
-  background-color: #61dafb; /* React Blue */
+  background-color: #61dafb;
   color: #282c34;
   padding: 12px 25px;
   border-radius: 10px;

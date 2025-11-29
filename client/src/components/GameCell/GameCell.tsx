@@ -12,7 +12,6 @@ interface GameCellProps {
 const GameCell: React.FC<GameCellProps> = ({ cell, onClick, isGameOver }) => {
   const hasCooldown = cell.cooldown > 0;
 
-  // Conditionally apply base class + state-specific class
   let cellClass = "game-cell-base ";
   if (isGameOver) {
     cellClass += "game-cell-gameover";
@@ -27,7 +26,6 @@ const GameCell: React.FC<GameCellProps> = ({ cell, onClick, isGameOver }) => {
       onClick={!isGameOver ? onClick : undefined}
       className={cellClass}
       style={{
-        // backgroundColor must remain inline as it changes dynamically based on cell.color
         backgroundColor: cell.color,
       }}
       title={

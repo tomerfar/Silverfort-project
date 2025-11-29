@@ -17,6 +17,7 @@ const SvgShape: React.FC<SvgShapeProps> = ({ shape, fillColor }) => {
 
   switch (shape) {
     case "Triangle":
+      // Triangle
       renderedShape = <polygon points="25,10 45,45 5,45" {...commonProps} />;
       break;
     case "Square":
