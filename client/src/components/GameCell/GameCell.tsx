@@ -1,9 +1,7 @@
-// client/src/components/GameCell/GameCell.tsx
-
 import React from "react";
 import { Cell } from "../../Types";
-import SvgShape from "../SvgShape/SvgShape"; // Updated path
-import "./GameCell.css"; // Import the dedicated CSS file
+import SvgShape from "../SvgShape/SvgShape";
+import "./GameCell.css";
 
 interface GameCellProps {
   cell: Cell;
@@ -13,9 +11,6 @@ interface GameCellProps {
 
 const GameCell: React.FC<GameCellProps> = ({ cell, onClick, isGameOver }) => {
   const hasCooldown = cell.cooldown > 0;
-
-  // Determine the correct class names based on state
-  const isClickable = !hasCooldown && !isGameOver;
 
   // Conditionally apply base class + state-specific class
   let cellClass = "game-cell-base ";
@@ -41,7 +36,7 @@ const GameCell: React.FC<GameCellProps> = ({ cell, onClick, isGameOver }) => {
           : `Shape: ${cell.shape}, Color: ${cell.color}`
       }
     >
-      {/* 1. SVG Shape Renderer (Bonus 2) */}
+      {/* 1. SVG Shape Renderer */}
       <div className="svg-shape-container">
         <SvgShape shape={cell.shape} fillColor="white" />
       </div>

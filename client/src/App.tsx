@@ -121,7 +121,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1 className="App-title">Multi-Session Grid Game 🕹️</h1>
+        <h1 className="App-title">Multi-Session Grid Game</h1>
         <p className="status-text">
           Connection Status: <strong>{connectionStatus}</strong>
         </p>
