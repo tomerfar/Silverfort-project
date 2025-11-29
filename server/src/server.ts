@@ -1,12 +1,18 @@
 // server/src/server.ts
 
 import express from "express";
+import cors from "cors";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
+import * as fs from "fs";
+import * as path from "path";
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = 3001;
+
+app.use(cors({ origin: "*" }));
+app.use(express.json());
 
 // הגדרת Socket.IO: מאפשר לכל Client להתחבר (CORS)
 const io = new Server(httpServer, {
@@ -44,6 +50,12 @@ interface Cell {
   shape: Shape; // משתמש ב-Literal Type
   color: Color; // משתמש ב-Literal Type
   cooldown: number;
+}
+
+interface HighScore {
+  name: string;
+  score: number;
+  date: string;
 }
 
 // מצב המשחק הגלובלי (מאותחל מאוחר יותר)
@@ -176,6 +188,61 @@ const isMoveValid = (
   return true;
 };
 
+const resetGame = () => {
+  gameState = {
+    score: 0,
+    grid: generateInitialGrid(), // יצירת לוח חדש
+    isActive: true, // הפעלת המשחק
+  };
+  console.log("Game successfully reset. New game started.");
+};
+
+// --- לוגיקת Leaderboard (Persistence) ---
+const LEADERBOARD_FILE = path.join(__dirname, "leaderboard.json");
+let leaderboard: HighScore[] = [];
+
+const loadLeaderboard = () => {
+  try {
+    if (fs.existsSync(LEADERBOARD_FILE)) {
+      const data = fs.readFileSync(LEADERBOARD_FILE, "utf-8");
+      leaderboard = JSON.parse(data);
+      console.log(`Leaderboard loaded with ${leaderboard.length} entries.`);
+    }
+  } catch (e) {
+    console.error("Error loading leaderboard:", e);
+  }
+};
+
+const saveLeaderboard = () => {
+  try {
+    // שמור רק את 10 התוצאות הטובות ביותר (בונוס)
+    const topScores = leaderboard
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(topScores, null, 2));
+  } catch (e) {
+    console.error("Error saving leaderboard:", e);
+  }
+};
+
+const addScoreToLeaderboard = (name: string, score: number) => {
+  if (score > 0) {
+    const newScore: HighScore = {
+      name,
+      score,
+      date: new Date().toISOString(),
+    };
+    leaderboard.push(newScore);
+    saveLeaderboard();
+  }
+};
+
+app.get("/api/leaderboard", (req, res) => {
+  // שלח את ה-10 התוצאות הטובות ביותר, ממוינות
+  const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+  res.json(top10);
+});
+
 // --- 2. לוגיקת חיבור לקוח ---
 io.on("connection", (socket: Socket) => {
   console.log(`Client connected: ${socket.id}`); // כאשר לקוח חדש מתחבר, שלח לו את מצב המשחק הנוכחי
@@ -263,11 +330,23 @@ io.on("connection", (socket: Socket) => {
       );
     } else {
       // 6. אין מהלך חוקי: Game Over
-      gameState.isActive = false; //
+      gameState.isActive = false;
       console.log(`Game Over! No valid move found for cell (${row}, ${col}).`);
+
+      // **שינוי: שלח אירוע מיוחד ללקוחות כדי שיבקשו את הכינוי**
+      io.emit("gameOver", { finalScore: gameState.score });
     }
 
-    // 7. שלח את המצב המעודכן לכל הלקוחות
+    // 7. שלח את המצב המעודכן לכל הלקוחות (כדי לעדכן את ה-UI)
+    io.emit("gameStateUpdate", gameState);
+  });
+
+  socket.on("submitScore", (data: { name: string; score: number }) => {
+    const { name, score } = data;
+    addScoreToLeaderboard(name, score);
+    console.log(`Score submitted: ${name} with ${score}`);
+
+    resetGame();
     io.emit("gameStateUpdate", gameState);
   });
 
@@ -279,6 +358,9 @@ io.on("connection", (socket: Socket) => {
 // --- 3. הפעלת השרת ---
 httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+
+  // טען את ה-Leaderboard הקיים
+  loadLeaderboard();
 
   // *** אתחול מצב המשחק הראשי ***
   gameState = {
